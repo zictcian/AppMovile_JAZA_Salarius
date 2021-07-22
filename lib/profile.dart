@@ -17,7 +17,7 @@ class CreateProfile extends State<Profile> {
 
   _getMovements() async {
     http.Response response =
-        await http.get(Uri.parse('http://localhost:3000/api/movements'));
+        await http.get(Uri.parse('http://10.0.2.2:3000/api/movements'));
     data = json.decode(response.body);
     setState(() {
       movementsData = data['movements'];

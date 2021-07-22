@@ -4,8 +4,53 @@ import 'package:finance/register.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexcolor/hexcolor.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
+  CreateMainPage createState() => CreateMainPage();
+}
+
+var bandera;
+
+class CreateMainPage extends State<MainPage> {
+
+  final userController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  Map data;
+  // ignore: deprecated_member_use
+  List usersData = new List();
+
+   Future<bool> _getUsers() async {
+    bandera=false;
+    http.Response response =
+        await http.get(Uri.parse('http://10.0.2.2:3000/api/users'));
+    data = json.decode(response.body);
+    setState(() {
+      usersData = data['users'];
+    });
+    var contador=0;
+    for(var i=0;i<usersData.length;i++){
+      if(userController.text == usersData[i]['user']){
+        if(passwordController.text == usersData[i]['password']){
+          bandera = true;
+          print("Correcto");
+          return bandera;
+        }else{
+          print("incorrecto 1");
+          return bandera;
+        }
+      }else{
+        contador++;
+        if(contador==usersData.length){
+          return bandera;
+        }
+      }
+    }
+    
+  }
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -33,8 +78,9 @@ class MainPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(40),
                   color: HexColor("0D0D0D"),
                   child: TextFormField(
+                    controller: userController,
                     textAlign: TextAlign.center,
-                    obscureText: true,
+                    style: TextStyle(color: Colors.white),
                     autofocus: false,
                     decoration: InputDecoration(
                         hintStyle: GoogleFonts.openSans(
@@ -53,8 +99,8 @@ class MainPage extends StatelessWidget {
                             EdgeInsets.fromLTRB(-30.0, 30.0, 20.0, 20.0),
                         enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(40.0),
-                            borderSide:
-                                BorderSide(color: HexColor("#595959"), width: 3.0))),
+                            borderSide: BorderSide(
+                                color: HexColor("#595959"), width: 3.0))),
                   ),
                 ),
               ),
@@ -68,7 +114,9 @@ class MainPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(40),
                   color: HexColor("0D0D0D"),
                   child: TextFormField(
+                    controller: passwordController,
                     textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white),
                     obscureText: true,
                     autofocus: false,
                     decoration: InputDecoration(
@@ -88,8 +136,8 @@ class MainPage extends StatelessWidget {
                             EdgeInsets.fromLTRB(-10.0, 30.0, 20.0, 20.0),
                         enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(40.0),
-                            borderSide:
-                                BorderSide(color: HexColor("#595959"), width: 3.0))),
+                            borderSide: BorderSide(
+                                color: HexColor("#595959"), width: 3.0))),
                   ),
                 ),
               ),
@@ -107,12 +155,33 @@ class MainPage extends StatelessWidget {
                   child: Padding(
                       padding: const EdgeInsets.all(2),
                       child: IconButton(
-                        onPressed: () {
-                          var route = new MaterialPageRoute(
-                            builder: (BuildContext context) => new Profile(),
-                          );
+                        onPressed: () async {
+                          if( await _getUsers()){
+                            var route = new MaterialPageRoute(
+                              builder: (BuildContext context) => new Profile(),
+                            );
 
-                          Navigator.of(context).push(route);
+                            Navigator.of(context).push(route);
+                          }else{
+                            return showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text('ERROR'),
+                                  content: Text(
+                                      'usuario y/o contraseña incorrecto'),
+                                  actions: <Widget>[
+                                    new FlatButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: new Text('ok'))
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                          
                         },
                         iconSize: 30.0,
                         icon: Icon(
@@ -128,18 +197,18 @@ class MainPage extends StatelessWidget {
                 children: [
                   FlatButton(
                     onPressed: () {
-                      //var route = new MaterialPageRoute(
-                      //builder: (BuildContext context) => new Register(),
-                      //);
-                      //Navigator.of(context).push(route);
+                      var route = new MaterialPageRoute(
+                        builder: (BuildContext context) => new Register(),
+                      );
+                      Navigator.of(context).push(route);
                     },
-                    child: new Text("Registrate",
-                        style: TextStyle(
-                          fontSize: 35,
-                          color: HexColor("A6A6A6"),
-                        ),
-                        ),
-
+                    child: new Text(
+                      "Registrate",
+                      style: TextStyle(
+                        fontSize: 35,
+                        color: HexColor("A6A6A6"),
+                      ),
+                    ),
                   ),
                 ],
               ),
